@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>英語学習アプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background:#f9f9f9; 
+            padding:20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .result {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap; /* 改行保持 */
+            margin-top: 20px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        button:hover {
+            background: #1e40af;
+        }
+    </style>
+
+    <script>
+        // rules を JS にも渡す
+        const rules = JSON.parse('{{ rules | tojson | safe }}');
+
+        function updateSections() {
+            const genre = document.getElementById("genre").value;
+            const sectionSelect = document.getElementById("section");
+            const formatSelect = document.getElementById("format");
+
+            // 初期化
+            sectionSelect.innerHTML = "";
+            formatSelect.innerHTML = "";
+
+            // ネイティブ会話ならセクション・フォーマットを隠す
+            if (genre === "Native conversation") {
+                document.getElementById("section-container").style.display = "none";
+                document.getElementById("format-container").style.display = "none";
+                return;
+            } else {
+                document.getElementById("section-container").style.display = "block";
+                document.getElementById("format-container").style.display = "block";
+            }
+
+            // セクション候補を追加
+            const sections = Object.keys(rules[genre]);
+            sections.forEach(sec => {
+                const option = document.createElement("option");
+                option.value = sec;
+                option.text = sec;
+                sectionSelect.appendChild(option);
+            });
+
+            // 最初のセクションでフォーマット更新
+            updateFormats();
+        }
+
+        function updateFormats() {
+            const genre = document.getElementById("genre").value;
+            const section = document.getElementById("section").value;
+            const formatSelect = document.getElementById("format");
+
+            formatSelect.innerHTML = "";
+
+            if (genre && section && rules[genre][section]) {
+                rules[genre][section].forEach(fmt => {
+                    const option = document.createElement("option");
+                    option.value = fmt;
+                    option.text = fmt;
+                    formatSelect.appendChild(option);
+                });
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>英語学習アプリ</h1>
+
+    <!-- エラーメッセージ表示 -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <!-- 単語入力欄 -->
+        <label>学習したい単語を入力してください：</label>
+        <input type="text" name="vocab" value="{{ vocab or '' }}" placeholder="例: innovation">
+
+        <!-- ジャンル選択 -->
+        <label>ジャンルを選択してください：</label>
+        <select id="genre" name="genre" onchange="updateSections()">
+            <option value="">--選択--</option>
+            {% for genre in rules.keys() %}
+            <option value="{{ genre }}">{{ genre }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <!-- セクション選択 -->
+        <div id="section-container">
+            <label>セクションを選択してください：</label>
+            <select id="section" name="section" onchange="updateFormats()">
+                <option value="">--選択--</option>
+            </select>
+        </div>
+        <br>
+
+        <!-- フォーマット選択 -->
+        <div id="format-container">
+            <label>フォーマットを選択してください：</label>
+            <select id="format" name="format">
+                <option value="">--選択--</option>
+            </select>
+        </div>
+        <br>
+
+        <button type="submit">Generate</button>
+    </form>
+
+    <div class="result">
+        <pre>{{ prompt }}</pre>
+    </div>
+</div>
+</body>
+</html>
