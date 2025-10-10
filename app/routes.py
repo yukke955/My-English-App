@@ -1,52 +1,67 @@
-# ルーティング処理
-# WEBリクエストの処理
+# ===============================
+# routes.py（ジャンル別会話生成版・修正版）
+# ===============================
 from flask import Blueprint, render_template, request, flash
 from app.generators import (
-    rules,
-    generate_conversation,
-    generate_explanation,
-    generate_long_reading,
-    generate_writing_task,
-    generate_speaking_task
+    generate_word_meanings,
+    generate_business_examples,
+    generate_academic_examples,
+    generate_daily_examples,
+    generate_native_casual_conversation,
+    rules
 )
 
+# Flask Blueprint 設定
 main = Blueprint("main", __name__, template_folder='../templates')
 
 @main.route("/", methods=["GET", "POST"])
 def index():
-    prompt = ""
     vocab = ""
+    meaning_text = ""
+    prompt = ""
+    
+    # 🔹 ページ上で使うルール説明など（例: セレクトボックスやヘルプ文）
+    rules = {
+        "business": "ビジネス：フォーマルで職場向けの例文を生成します。",
+        "academic": "アカデミック：論文・研究向けの表現を生成します。",
+        "daily": "日常会話：カジュアルで自然な表現を生成します。",
+        "native": "ネイティブ会話：自然でリアルな英会話表現を生成します。"
+    }
 
     if request.method == "POST":
         genre = request.form.get("genre")
-        section = request.form.get("section")
-        chosen_format = request.form.get("format")
         vocab = request.form.get("vocab", "").strip()
 
         if not vocab:
             flash("単語を入力してください。")
-            return render_template("index.html", prompt="", rules=rules)
+            return render_template(
+                "index.html",
+                vocab=vocab,
+                meaning_text=meaning_text,
+                prompt=prompt,
+                rules=rules
+            )
 
-        # === フォーマットに応じた生成 ===
-        if genre == "Native conversation":
-            prompt = generate_conversation(num_speakers=2, vocab=vocab)
-        elif chosen_format == "conversation_2":
-            prompt = generate_conversation(num_speakers=2, vocab=vocab)
-        elif chosen_format == "conversation_3":
-            prompt = generate_conversation(num_speakers=3, vocab=vocab)
-        elif chosen_format == "business_explanation":
-            prompt = generate_explanation(context="business", vocab=vocab)
-        elif chosen_format == "business_long_text":
-            prompt = generate_long_reading(context="business", vocab=vocab)
-        elif chosen_format == "lecture":
-            prompt = generate_explanation(context="academic", vocab=vocab)
-        elif chosen_format == "academic_explanation":
-            prompt = generate_explanation(context="academic", vocab=vocab)
-        elif chosen_format == "writing_task":
-            prompt = generate_writing_task(vocab=vocab)
-        elif chosen_format == "speaking_task":
-            prompt = generate_speaking_task(vocab=vocab)
+        # ===== ① 単語の意味（多義語対応）を生成 =====
+        meaning_text = generate_word_meanings(vocab=vocab)
+
+        # ===== ② ジャンル別の例文・会話を生成 =====
+        if genre == "business":
+            prompt = generate_business_examples(vocab=vocab)
+        elif genre == "academic":
+            prompt = generate_academic_examples(vocab=vocab)
+        elif genre == "daily":
+            prompt = generate_daily_examples(vocab=vocab)
+        elif genre == "native":
+            prompt = generate_native_casual_conversation(vocab=vocab)
         else:
-            prompt = "Please select valid options."
+            prompt = "Please select a valid genre."
 
-    return render_template("index.html", prompt=prompt, rules=rules, vocab=vocab)
+    # 🔹 語義＋例文を両方テンプレートへ
+    return render_template(
+        "index.html",
+        vocab=vocab,
+        meaning_text=meaning_text,
+        prompt=prompt,
+        rules=rules
+    )

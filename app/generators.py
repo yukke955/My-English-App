@@ -1,51 +1,135 @@
+# ========  Geminiを用いた例文・会話生成（試験名なし版）  =========
+from flask import current_app
+import random
 
 
-# 例文生成import random
-# #ランダムいらない
+# --- Gemini呼び出し関数 ---
+def _generate_from_gemini(prompt: str) -> str:
+    """Geminiモデルにプロンプトを送信してテキストを取得"""
+    try:
+        model = current_app.model
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"[Error] Gemini API 呼び出し失敗: {e}"
 
-# ===== 選択ルール =====
+# ===== 単語の意味生成 =====
+def generate_word_meanings(vocab="word"):
+    prompt = f"""
+You are an expert bilingual English-Japanese lexicographer.
+
+Provide a concise and clear explanation of the English word "{vocab}" in Japanese, including:
+- its part(s) of speech (noun, verb, adjective, etc.)
+- 2–4 major meanings , numbered (1), (2), (3)...
+
+⚠️ Output only in this structured Japanese format, without any English introductions or meta explanations.
+⚠️ Do not include phrases like "Of course" or "Here are the meanings".
+Format example:
+
+単語の意味
+(1) 【名詞】革新、新しい考え
+(2) 【名詞】新しい製品・発明
+
+"""
+    return _generate_from_gemini(prompt)
+
+# ===== 各分野別 生成関数 =====
+
+## --- Business ---
+def generate_business_examples(vocab="word"):
+    prompt = f"""
+Generate three English example sentences for a business context using the word "{vocab}".
+Use a formal and concise tone suitable for workplace communication.
+After each English sentence, provide a natural Japanese translation starting with "→".
+"""
+    return _generate_from_gemini(prompt)
+
+
+
+## --- Academic ---
+def generate_academic_examples(vocab="word"):
+    prompt = f"""
+Generate three academic English sentences that use the word "{vocab}".
+Use formal and objective language similar to research or academic writing.
+After each English sentence, include a Japanese translation starting with "→".
+"""
+    return _generate_from_gemini(prompt)
+
+
+
+NAMES = ["Alice", "Bob", "Charlie", "David", "Emma", "Fiona", "George", "Hannah", "Jack", "Lily"]
+## --- Daily ---
+def generate_daily_examples(vocab="word"):
+
+    
+        # ランダムに2〜3人選ぶ
+    speakers = random.sample(NAMES, k=random.choice([2, 3]))
+    speakers_str = ", ".join(speakers)
+
+    prompt = f"""
+Create a daily-life conversation that naturally includes the word "{vocab}".
+- Include 2 or 3 speakers: {speakers_str}.
+- Each line should be short, casual, and sound like natural spoken Japanese/English.
+- The scene or situation should be random and everyday (no need to specify in advance).
+- After each English line, provide a Japanese translation starting with "→".
+
+Example output format:
+{speakers[0]}: Hello! How are you?
+→ こんにちは！元気？
+{speakers[1]}: I'm good, thanks. Did you try the new cafe?
+→ 元気だよ。新しいカフェ行った？
+{speakers[2] if len(speakers) == 3 else ""}: Not yet, but I want to!
+→ まだ行ってないけど、行きたい！
+
+"""
+    return _generate_from_gemini(prompt)
+
+
+
+
+## --- Native Casual Conversation ---
+def generate_native_casual_conversation(vocab="word"):
+    # ランダムに2〜3人選ぶ
+    speakers = random.sample(NAMES, k=random.choice([2, 3]))
+    speakers_str = ", ".join(speakers)
+
+    prompt = f"""
+Write a natural, casual conversation between 2 or 3 native English speakers that includes the word "{vocab}".
+- Include 2 or 3 speakers: {speakers_str}.
+- Use relaxed tone, contractions, and idiomatic phrases typical of spoken English.
+- The scene or situation should be random.
+- After each English line, provide a Japanese translation starting with "→".
+
+Example output format:
+{speakers[0]}: Hey, have you seen the latest episode?
+→ ねえ、最新のエピソード見た？
+{speakers[1]}: Yeah! It was amazing!
+→ 見たよ！めっちゃ良かった！
+{speakers[2] if len(speakers) == 3 else ""}: I need to catch up soon.
+→ すぐ追いつかないと！
+"""
+    return _generate_from_gemini(prompt)
+
+
+
+# ===== 表示整形 =====
+def format_academic_explanation(term: str, text: str) -> str:
+    """
+    Geminiで生成された文章を整形
+    - 不要な冒頭文削除
+    - アスタリスク削除
+    - 見出しを固定
+    """
+    lines = text.splitlines()
+    filtered_lines = [line for line in lines if not line.startswith("Of course")]
+    cleaned_lines = [line.replace("*", "") for line in filtered_lines]
+    formatted_text = f"### Explanation of {term}\n\n" + "\n".join(cleaned_lines)
+    return formatted_text
+
+# ===== 共通ルール説明 =====
 rules = {
-    "TOEIC": {
-        "Listening": ["conversation_2", "conversation_3", "business_explanation"],
-        "Reading": ["conversation_2", "business_long_text"]
-    },
-    "TOEFL": {
-        "Listening": ["conversation_2", "lecture"],
-        "Reading": ["academic_explanation"],
-        "Writing": ["writing_task"],
-        "Speaking": ["speaking_task"]
-    },
-    "IELTS": {
-        "Listening": ["conversation_2", "explanation"],
-        "Reading": ["academic_explanation"],
-        "Writing": ["writing_task"],
-        "Speaking": ["speaking_task"]
-    },
-    "Native conversation": {
-        "default": []
-    }
+    "business": "ビジネス：フォーマルで職場向けの例文を生成。",
+    "academic": "アカデミック：論文・研究向けの表現を生成。",
+    "daily": "日常会話：カジュアルで自然な表現を生成。",
+    "native": "ネイティブ会話：自然でリアルな英会話表現を生成。"
 }
-
-# ===== ダミー生成関数 =====
-def generate_conversation(num_speakers=2, vocab="word"):
-    if num_speakers == 2:
-        return f"A: Hi, how are you?\nB: I'm good, thanks. I just learned '{vocab}'."
-    elif num_speakers == 3:
-        return f"A: Are we ready for the meeting?\nB: Yes, almost.\nC: Don’t forget the '{vocab}'."
-
-def generate_explanation(context="business", vocab="word"):
-    if context == "business":
-        return f"This is a short business announcement including '{vocab}'."
-    elif context == "academic":
-        return f"This passage explains an academic concept of '{vocab}'."
-    else:
-        return f"This is a general explanation about '{vocab}'."
-
-def generate_long_reading(context="business", vocab="word"):
-    return f"This is a longer business text with more detail. The topic is '{vocab}'."
-
-def generate_writing_task(vocab="word"):
-    return f"Write an essay about how '{vocab}' influences modern society."
-
-def generate_speaking_task(vocab="word"):
-    return f"Describe a situation where '{vocab}' was important in your daily life."
