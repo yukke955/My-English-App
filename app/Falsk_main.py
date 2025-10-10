@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Flask本体
 # アプリ設定やGemini接続を一元化
 
@@ -25,7 +25,7 @@ def create_app():
     app.register_blueprint(main)
 
     return app
-=======
+
 # Flask本体
 # アプリ設定やGemini接続を一元化
 
@@ -52,4 +52,3 @@ def create_app():
     app.register_blueprint(main)
 
     return app
->>>>>>> 8e2e795f2a8ecac2c48a82334af770b3c053e4eb

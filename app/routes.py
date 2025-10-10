@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ルーティング処理
 # WEBリクエストの処理
 
@@ -52,7 +51,7 @@ def index():
             prompt = "Please select valid options."
 
     return render_template("index.html", prompt=prompt, rules=rules, vocab=vocab)
-=======
+
 # ルーティング処理
 # WEBリクエストの処理
 
@@ -106,4 +105,4 @@ def index():
             prompt = "Please select valid options."
 
     return render_template("index.html", prompt=prompt, rules=rules, vocab=vocab)
->>>>>>> 8e2e795f2a8ecac2c48a82334af770b3c053e4eb
+
