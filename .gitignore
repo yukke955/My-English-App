@@ -1,6 +1,9 @@
 # Byte-compiled / optimized / DLL files
+# Python 関連
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 *$py.class
 
 # C extensions
@@ -132,6 +135,7 @@ celerybeat.pid
 .venv
 env/
 venv/
+Scripts/
 ENV/
 env.bak/
 venv.bak/
@@ -182,3 +186,7 @@ cython_debug/
 
 
 mainapp.py
+# app配下のFlask_main.pyを無視
+app/Flask_main.py
+app/Falsk_main.py
+
