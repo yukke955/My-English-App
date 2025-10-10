@@ -1,9 +1,5 @@
-
 # Flask本体
 # アプリ設定やGemini接続を一元化
-
-# app/__init__.py
-
 from flask import Flask
 from dotenv import load_dotenv
 import os
@@ -25,3 +21,5 @@ def create_app():
     app.register_blueprint(main)
 
     return app
+
+app=create_app()

@@ -1,6 +1,5 @@
 # ルーティング処理
 # WEBリクエストの処理
-
 from flask import Blueprint, render_template, request, flash
 from app.generators import (
     rules,
