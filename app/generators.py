@@ -1,7 +1,7 @@
 
 
-# 例文生成
-import random #ランダムいらない
+# 例文生成import random
+# #ランダムいらない
 
 # ===== 選択ルール =====
 rules = {
