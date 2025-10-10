@@ -187,6 +187,7 @@ cython_debug/
 
 mainapp.py
 # app配下のFlask_main.pyを無視
+app/api.py
 app/Flask_main.py
 app/Falsk_main.py
 
