@@ -4,10 +4,15 @@ import sys
 import os
 from pathlib import Path
 
-# appディレクトリをPythonパスに追加
-sys.path.append(str(Path(__file__).resolve().parent / "app"))
+# 現在のファイル(run.py)のディレクトリを取得
+BASE_DIR = Path(__file__).resolve().parent
+APP_DIR = BASE_DIR / "app"
 
-# Flaskアプリをインポート
+# appディレクトリをPythonパスに追加
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
+
+# Flask_mainをインポート
 from Flask_main import app
 
 if __name__ == "__main__":
