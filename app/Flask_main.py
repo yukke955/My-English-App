@@ -11,20 +11,23 @@ def create_app():
     template_path = os.path.join(base_dir, "templates")
     session_dir = os.path.join(base_dir, "flask_session")
     
-    app = Flask(__name__, template_folder="app/templates")
+    app = Flask(__name__, template_folder=template_path)
 
     # --- セッション設定を「サーバー側保存」に変更 ---
     app.config["SESSION_TYPE"] = "filesystem"
-    app.config["SESSION_FILE_DIR"] = "./flask_session"
+    session_dir = os.path.join(base_dir, "flask_session") 
+    app.config["SESSION_FILE_DIR"] = session_dir         
+
     app.config["SESSION_PERMANENT"] = False
     app.secret_key = os.getenv("SECRET_KEY", "dev_key")
 
     Session(app)  # ✅ これが重要
     
         # ✅ この位置でリセットする（Session初期化の後！）
-    if os.path.exists("./flask_session"):
-        shutil.rmtree("./flask_session")
-    os.makedirs("./flask_session", exist_ok=True)
+    if os.path.exists(session_dir):
+        shutil.rmtree(session_dir)
+    os.makedirs(session_dir, exist_ok=True)
+
     print("🧹 セッション履歴をリセットしました")
        
 
