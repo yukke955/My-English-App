@@ -1,3 +1,14 @@
+import os
+
+print("===== Current directory =====")
+print(os.getcwd())
+print("===== Files in project root =====")
+print(os.listdir())
+print("===== Files in app/ =====")
+print(os.listdir("app"))
+
+
+
 # 実行
 # 開発・本番の両方を起動
 from app.Flask_main import app
