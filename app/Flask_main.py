@@ -1,10 +1,12 @@
-import os, shutil, re
+import os, shutil, re, json
 from flask import Flask
 from flask_session import Session
 from dotenv import load_dotenv
 import google.generativeai as genai
+from google.generativeai import configure
 
 load_dotenv()
+
 
 def create_app():
     base_dir = os.path.dirname(__file__)
@@ -34,13 +36,17 @@ def create_app():
     # --- Gemini設定 ---
     api_key = os.getenv("GOOGLE_API_KEY")
     genai.configure(api_key=api_key)
-    try:
-        app.model = genai.GenerativeModel("models/gemini-2.5-flash")
-
-        print("✅ Gemini モデル初期化完了（gemini-2.5-flash）")
-    except Exception as e:
-        print(f"❌ Gemini モデル初期化エラー: {e}")
-        app.model = None
+        
+    if not api_key:
+        print("❌ GOOGLE_API_KEY が設定されていません")
+    else:
+        try:
+            genai.configure(api_key=api_key)
+            app.model = genai.GenerativeModel("models/gemini-2.5-flash")
+            print("✅ Gemini モデル初期化完了（gemini-2.5-flash）")
+        except Exception as e:
+            print(f"❌ Gemini モデル初期化エラー: {e}")
+            app.model = None
     
     # --- ルート登録 ---
     from app.routes import main
