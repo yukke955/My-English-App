@@ -1,11 +1,11 @@
-import os
+# import os
 
-print("===== Current directory =====")
-print(os.getcwd())
-print("===== Files in project root =====")
-print(os.listdir())
-print("===== Files in app/ =====")
-print(os.listdir("app"))
+# print("===== Current directory =====")
+# print(os.getcwd())
+# print("===== Files in project root =====")
+# print(os.listdir())
+# print("===== Files in app/ =====")
+# print(os.listdir("app"))
 
 
 
